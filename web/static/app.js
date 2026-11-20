@@ -455,6 +455,12 @@ onClick("agree", async () => {
 });
 onClick("sign-again", async () => goTo(4));
 onClick("sign-first", async () => goTo(5));
+// The intro's screenshot of an exchange asking for the proof, shown in place.
+onClick("travelrule-open", async () => {
+  const shot = $("travelrule");
+  shot.hidden = !shot.hidden;
+  $("travelrule-open").setAttribute("aria-expanded", String(!shot.hidden));
+});
 onClick("wait-details", async () => {
   details = !details;
   render();

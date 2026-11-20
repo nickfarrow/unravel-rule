@@ -40,6 +40,9 @@ def bundle(html, js, out):
     page = replace_once(page, '<link rel="stylesheet" href="style.css">', f"<style>\n{css}</style>")
     icon = base64.b64encode((web / "static/favicon-48.png").read_bytes()).decode()
     page = replace_once(page, 'href="favicon-48.png"', f'href="data:image/png;base64,{icon}"')
+    if 'src="travelrule.png"' in page:
+        shot = base64.b64encode((web / "static/travelrule.png").read_bytes()).decode()
+        page = replace_once(page, 'src="travelrule.png"', f'src="data:image/png;base64,{shot}"')
     page = replace_once(
         page,
         f'<script type="module" src="{js}"></script>',

@@ -133,6 +133,7 @@ h1, h2 { font-weight: 700; }
 .explain ul { padding-left: 1.25rem; }
 .explain li + li { margin-top: 0.5rem; }
 /* White, so cyan only ever means the user's wallet. */
+.shot img { display: block; max-width: 100%; height: auto; margin-inline: auto; border: 2px solid var(--line); }
 .explain p.pitch, .hl { color: #fff; font-weight: 700; }
 .hl b { color: inherit; }
 
