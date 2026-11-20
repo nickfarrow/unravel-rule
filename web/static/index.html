@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>unravel rule</title>
+  <meta name="description" content="A hop address signs the exchange's proof-of-ownership message and forwards everything to your wallet. Cold keys stay cold: they sign nothing.">
+  <meta name="theme-color" content="#000000">
+  <link rel="canonical" href="https://unravelrule.xyz/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://unravelrule.xyz/">
+  <meta property="og:title" content="unravel rule · prove you own an address">
+  <meta property="og:description" content="A hop address signs the exchange's proof-of-ownership message and forwards everything to your wallet. Cold keys stay cold: they sign nothing.">
+  <meta property="og:image" content="https://unravelrule.xyz/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="travel rule, with an UN sticker slapped over the t to make unravel rule, over the tagline: prove you own an address">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="unravel rule · prove you own an address">
+  <meta name="twitter:description" content="A hop address signs the exchange's proof-of-ownership message and forwards everything to your wallet. Cold keys stay cold: they sign nothing.">
+  <meta name="twitter:image" content="https://unravelrule.xyz/og.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+</head>
+<body>
+  <noscript><p class="err">this page needs JavaScript.</p></noscript>
+  <p class="fee" id="fee" hidden></p>
+  <details class="conn" id="conn">
+    <summary><span class="dot"></span><span id="conn-label">connecting</span></summary>
+    <div class="panel">
+      <dl>
+        <dt>server</dt><dd id="conn-url" class="k-s"></dd>
+        <dt>network</dt><dd id="conn-net">-</dd>
+        <dt>server key</dt><dd id="conn-key" class="k-s">-</dd>
+        <dt>protocol</dt><dd id="conn-proto">-</dd>
+      </dl>
+      <input id="conn-new" aria-label="another server's address" placeholder="https://… another server" spellcheck="false" autocomplete="off">
+      <div class="row">
+        <a href="#" id="conn-set">connect</a>
+        <a href="#" id="conn-reset" class="helper">use the default server</a>
+      </div>
+      <p class="err" aria-live="polite" id="conn-err"></p>
+    </div>
+  </details>
+  <main>
+    <h1 class="mega" aria-label="unravel rule"><span class="swap" aria-hidden="true"><span class="from">t</span><span class="to">un</span></span>ravel rule</h1>
+    <p class="tag"><em>prove</em> you own <b>an</b> address</p>
+    <p class="net" id="net"></p>
+
+    <details class="explain">
+      <summary aria-label="what is this?" title="what is this?">[info]</summary>
+      <p>Exchanges now ask for cryptographic proof that you own your withdrawal address. That proof goes into a database next to your passport and home address, and on to their compliance and chain-analytics vendors. These databases leak, and a leak is a shopping list for <a href="https://github.com/jlopp/physical-bitcoin-attacks" rel="noopener noreferrer">wrench attackers</a>: who holds bitcoin, how much, and where they sleep.</p>
+      <p>The usual ways to comply give away more. An xpub reveals your whole wallet and its history. A test payment links the address to your other coins on-chain. Signing with your cold wallet brings out the keys that guard everything, and many hardware wallets can't sign it.</p>
+      <p>The rule only asks you to prove you control the address you withdraw to, and any address you control will do.</p>
+      <p class="pitch">This tool provides a <span class="hop">hop address</span> that does the signing instead. You withdraw to it, and it forwards everything to <span class="k-d">the destination</span>. Cold keys stay cold: the destination signs nothing.</p>
+      <ul>
+        <li>The exchange gets the bare minimum: one signature for one address, and one later payment from it to the destination, which it would have seen anyway. No xpub, balance or history ever enters its system. It still knows who you are; this only stops it prying into the rest of your wallet and your entire transaction history.</li>
+        <li>This system is designed so it can't take your coins, <span class="hl">but that depends on the code this site serves being honest.</span> So the safest way to use this tool is to <a href="https://github.com/nickfarrow/unravel-rule/releases" rel="noopener noreferrer">download the browser client</a> and run it on your own machine.</li>
+        <li>If you lose <span class="k-b">this browser</span>, or <span class="k-s">the server</span> vanishes, the key of <span class="k-d">the bc1p address you gave</span> can still claim the funds with the emergency kit you saved. The <a href="https://github.com/nickfarrow/unravel-rule">source code</a>'s <code>just rescue</code> command builds the spend for Bitcoin Core from that kit and the wallet's seed words, offline.</li>
+        <li>There's no account or sign-up. <span class="k-s">The server</span> sees which hop address goes to which bc1p address and, when depositing, to which exchange deposit address. It also sees the exchange's message you sign, your deposits and, like any website, your IP address.</li>
+        <li><span class="hl">No warranty.</span> This is experimental, unaudited software, provided as is. The server can't move your coins on its own, and nobody will make good a loss: you use it at your own risk with small amounts.</li>
+        <li>There's no service fee. The destination receives the deposit minus the forward's network fee, which the page estimates before you withdraw.</li>
+      </ul>
+      <p class="row center"><a href="about">learn more</a></p>
+    </details>
+
+    <div class="trail" id="trail" hidden><span id="trail-text"></span><a href="#" id="back">back</a></div>
+    <ol class="steps">
+      <li class="card open" id="c-mode">
+        <header><h2 tabindex="-1">What are you doing?</h2></header>
+        <div class="body">
+          <div class="choice">
+            <a href="#" id="mode-withdraw">I'm withdrawing from an exchange</a>
+            <a href="#" id="mode-deposit">I'm depositing to an exchange</a>
+          </div>
+          <p class="err" aria-live="polite" id="mode-err"></p>
+        </div>
+      </li>
+
+      <li class="card" id="c-exchange">
+        <header><h2 tabindex="-1">The exchange's deposit address</h2></header>
+        <div class="body">
+          <input id="exchange" aria-label="the exchange's deposit address" placeholder="the exchange's deposit address" spellcheck="false" autocomplete="off">
+          <p class="small">Your deposit is forwarded here. Recovering the hop address needs this address too, so your emergency kit lists it.</p>
+          <div class="row">
+            <a href="#" id="test-exchange" class="helper">use a test address</a>
+            <a href="#" id="exchange-next">next</a>
+          </div>
+          <p class="err" aria-live="polite" id="exchange-err"></p>
+        </div>
+      </li>
+
+      <li class="card" id="c-x">
+        <header><h2 tabindex="-1" id="x-title">Where should the coins end up?</h2></header>
+        <div class="body">
+          <input id="x" aria-label="your taproot address" placeholder="bc1p…" spellcheck="false" autocomplete="off">
+          <p class="small" data-mode="withdraw">a taproot address (bc1p…), usually a fresh receive address from your cold wallet.</p>
+          <p class="small" data-mode="deposit" hidden>A taproot address (bc1p…) from your own wallet. If the exchange sends your deposit back, or this site disappears, the coins can come back here.</p>
+          <div class="row">
+            <a href="#" id="test-x" class="helper">use a test address</a>
+            <a href="#" id="make">next</a>
+          </div>
+          <p class="err" aria-live="polite" id="x-err"></p>
+        </div>
+      </li>
+
+      <li class="card" id="c-kit">
+        <header><h2 tabindex="-1">Save your emergency kit</h2></header>
+        <div class="body">
+          <p class="small">a small file that gets your coins back if this site ever disappears.</p>
+          <p class="small" id="kit-again" hidden></p>
+          <div class="row">
+            <a href="#" id="kit-get">download</a>
+            <a href="#" id="kit-copy">copy</a>
+          </div>
+          <p class="ok" id="kit-ok" aria-live="polite"></p>
+          <div class="row"><a href="#" id="kit-check" hidden>check it</a><a href="#" id="kit-restore" class="helper">already have an emergency kit? reuse it</a></div>
+          <p class="err" aria-live="polite" id="kit-save-err"></p>
+          <div class="row" id="kit-next-row" hidden><a href="#" id="kit-next">next</a></div>
+        </div>
+      </li>
+
+      <li class="card" id="c-check">
+        <header><h2 tabindex="-1" id="check-title">Check your kit</h2></header>
+        <div class="body">
+          <p class="small" id="check-hint"></p>
+          <div class="row"><a href="#" id="kit-upload">choose the file</a></div>
+          <input type="file" id="kit-file" accept=".txt,text/plain" hidden>
+          <div class="row" id="kit-paste-row"><a href="#" id="kit-paste" class="helper">copied it instead? paste it here</a></div>
+          <div id="kit-paste-box" hidden>
+            <textarea id="kit-typed" aria-label="your emergency kit or rescue key" placeholder="paste your kit, or just its rescue key" spellcheck="false" autocomplete="off"></textarea>
+            <div class="row end"><a href="#" id="kit-verify">check</a></div>
+          </div>
+          <p class="err" aria-live="polite" id="kit-err"></p>
+        </div>
+      </li>
+
+      <li class="card" id="c-agree">
+        <header><h2 tabindex="-1">Accept the risks</h2></header>
+        <div class="body">
+          <p class="small">This is new, experimental and unaudited software. Use it with small amounts.</p>
+          <div class="row"><a href="#" id="agree">agree</a></div>
+          <p class="err" aria-live="polite" id="agree-err"></p>
+        </div>
+      </li>
+
+      <li class="card" id="c-hop">
+        <header><h2 tabindex="-1">Your hop address</h2></header>
+        <div class="body">
+          <p class="big" id="y"></p>
+          <pre class="qr" id="y-qr"></pre>
+          <p class="small" data-mode="withdraw">add it at the exchange as your withdrawal address.</p>
+          <p class="small" id="hop-addrs"></p>
+          <div class="row">
+            <a href="#" id="copy-y">copy</a>
+            <a href="#" id="verify-y" class="helper">verify</a>
+          </div>
+          <div class="verify" id="verify" hidden>
+            <p class="ok" id="y-ok"></p>
+            <p class="small">These are the address's spending rules, here so you can check them. You don't need to save them: your emergency kit rebuilds them.</p>
+            <pre id="desc"></pre>
+            <div class="row"><a href="#" id="copy-desc">copy</a></div>
+            <p class="d-legend"><span class="k-d">■ your wallet</span><span class="k-b">■ this browser</span><span class="k-s">■ the server</span></p>
+            <p class="small" id="desc-key"></p>
+            <p class="small">To check them without trusting this site, give them to Bitcoin Core. It should print the address above:</p>
+            <pre id="desc-cmd"></pre>
+            <p class="small">Then check the cyan key really is your address's. Bitcoin Core should print it as the witness_program:</p>
+            <pre id="key-cmd"></pre>
+            <p class="small">Nothing can show who really holds the striped key's two halves: that rests on this site's code being honest. <a href="about">Read how it works</a>.</p>
+          </div>
+          <p class="status waiting" id="hop-wait" hidden>waiting for your deposit</p>
+          <div class="row">
+            <a href="#" id="sign-first" class="helper" hidden>asked to sign first?</a>
+            <a href="#" id="next-3">next</a>
+          </div>
+        </div>
+      </li>
+
+      <li class="card" id="c-wait">
+        <header><h2 tabindex="-1" id="wait-title">Withdraw to your hop address</h2></header>
+        <div class="body">
+          <p class="big" id="wait-y"></p>
+          <div class="row"><a href="#" id="copy-wait-y">copy</a></div>
+          <p class="status" id="status-main" aria-live="polite"></p>
+          <p class="small" id="status-earlier" hidden></p>
+          <div class="row" id="send-choice" hidden>
+            <a href="#" id="send-exchange">send to the exchange</a>
+            <a href="#" id="send-x">send to my wallet</a>
+          </div>
+          <p class="err" aria-live="polite" id="fwd-err"></p>
+          <p class="err warn" aria-live="polite" id="fee-warn"></p>
+          <div id="wait-more">
+            <p class="small" id="status-detail"></p>
+          </div>
+          <p class="small" id="close-note">keep this page open until your coins have been received and hopped.</p>
+          <div class="row">
+            <a href="#" id="sign-again" class="helper" data-mode="withdraw">sign another message</a>
+            <a href="#" id="wait-details" class="helper" data-mode="deposit" hidden>details</a>
+          </div>
+        </div>
+      </li>
+
+      <li class="card" id="c-sign">
+        <header><h2 tabindex="-1">Sign the exchange's message</h2></header>
+        <div class="body">
+          <textarea id="challenge" aria-label="the exchange's challenge message" placeholder="paste the challenge message the exchange gives you" spellcheck="false" autocomplete="off"></textarea>
+          <p class="small">signs with BIP-322, simple format.</p>
+          <div class="row end"><a href="#" id="sign">sign</a></div>
+          <textarea id="proof" aria-label="your signature" readonly hidden></textarea>
+          <p class="ok" id="proof-ok" aria-live="polite"></p>
+          <p class="small" id="proof-hint" hidden>paste this signature back into the exchange.</p>
+          <div class="row" id="proof-row" hidden>
+            <a href="#" id="copy">copy</a>
+            <a href="#" id="next-4" data-mode="withdraw">next</a>
+          </div>
+          <p class="err" aria-live="polite" id="sign-err"></p>
+        </div>
+      </li>
+    </ol>
+    <!-- The regtest demo's stand-ins for a wallet and miners, outside the cards so they work
+         at any step. A "body" so a failed click shows its error here. -->
+    <div class="body" id="demo" hidden>
+      <p class="row center"><a href="#" id="withdraw" class="helper">send 100k sats</a><a href="#" id="mine" class="helper">mine a block</a></p>
+      <p class="err" aria-live="polite"></p>
+    </div>
+    <p class="err" aria-live="polite" id="page-err"></p>
+    <p class="row center" id="forget-row" hidden><a href="#" id="forget">start over</a></p>
+    <div class="forget-confirm" id="forget-confirm" hidden>
+      <p class="small" id="forget-what"></p>
+      <p class="row center"><a href="#" id="forget-yes">start over</a><a href="#" id="forget-no" class="helper">cancel</a></p>
+    </div>
+
+    <footer>
+      <p><b>NON-CUSTODIAL.</b> No account, no passport, no selfie.</p>
+      <p>Experimental, unaudited software. Use it at your own risk with small amounts.</p>
+      <p class="row center"><a href="about">learn more</a><a href="#" id="kit-open" hidden>emergency kit</a><a href="recover" download="unravelrule-recover.html">recovery page</a><a href="https://github.com/nickfarrow/unravel-rule">code</a></p>
+      <p class="made row center"><a href="https://utxo.club" target="_blank" rel="noopener noreferrer">made by utxoclub</a></p>
+    </footer>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

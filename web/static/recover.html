@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>recover · unravel rule</title>
+  <meta name="description" content="Rebuild a hop address and its spending rules from your emergency kit and your bc1p address. One self-contained file that works offline.">
+  <meta name="theme-color" content="#000000">
+  <link rel="canonical" href="https://unravelrule.xyz/recover">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://unravelrule.xyz/recover">
+  <meta property="og:title" content="recover a hop address · unravel rule">
+  <meta property="og:description" content="Rebuild a hop address and its spending rules from your emergency kit and your bc1p address. One self-contained file that works offline.">
+  <meta property="og:image" content="https://unravelrule.xyz/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="travel rule, with an UN sticker slapped over the t to make unravel rule, over the tagline: prove you own an address">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="recover a hop address · unravel rule">
+  <meta name="twitter:description" content="Rebuild a hop address and its spending rules from your emergency kit and your bc1p address. One self-contained file that works offline.">
+  <meta name="twitter:image" content="https://unravelrule.xyz/og.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+</head>
+<body>
+  <main class="doc">
+    <p><a href="./">← unravel rule</a></p>
+    <h1>Recover a hop address</h1>
+    <p>Lost the browser, or the server? Your emergency kit and your bc1p address rebuild the hop address and its spending rules. A hop address made for depositing to an exchange also needs the exchange's deposit address, which your kit lists. This page is one self-contained file. <a href="recover" download="unravelrule-recover.html">Save it</a> and it works offline, with the server gone.</p>
+
+    <div class="row"><a href="#" id="upload">choose your kit file</a></div>
+    <input type="file" id="kit-file" accept=".txt,text/plain" hidden>
+    <p class="ok" id="kit-ok"></p>
+    <label for="rescue">rescue key, from your kit</label>
+    <input id="rescue" placeholder="xxxx-xxxx-…" spellcheck="false" autocomplete="off">
+    <label for="x">Your bc1p address: the destination when withdrawing, or your wallet's address when depositing. Not sure which? Paste your wallet's receive addresses, one per line, and the hop address below.</label>
+    <textarea id="x" placeholder="bc1p…" spellcheck="false" autocomplete="off"></textarea>
+    <label for="exchange">The exchange's deposit address, only for a hop address made for depositing to an exchange. Your kit lists the ones you've used. It's also on the exchange's deposit page and, if the hop address forwarded to it before, in the hop address's history on a block explorer. With any here, enter the hop address below too.</label>
+    <textarea id="exchange" placeholder="(optional)" spellcheck="false" autocomplete="off"></textarea>
+    <label for="hop">Hop address, if you know it. When withdrawing, it's in the exchange's withdrawal history. When depositing, it's in your wallet's send history.</label>
+    <input id="hop" placeholder="bc1p… (optional)" spellcheck="false" autocomplete="off">
+    <label for="spk">server key, from your kit</label>
+    <input id="spk" spellcheck="false" autocomplete="off">
+    <label for="net">network</label>
+    <select id="net">
+      <option>bitcoin</option>
+      <option>testnet</option>
+      <option>testnet4</option>
+      <option>signet</option>
+      <option>regtest</option>
+    </select>
+    <div class="row"><a href="#" id="go">rebuild</a></div>
+    <p class="err" id="err" aria-live="polite"></p>
+
+    <div id="out" hidden>
+      <h2>Hop address</h2>
+      <p class="big" id="y"></p>
+      <p id="x-used"></p>
+      <div class="row"><a href="#" id="copy-y">copy</a></div>
+      <h2>Spending rules</h2>
+      <textarea id="desc" readonly></textarea>
+      <div class="row"><a href="#" id="copy-desc">copy</a></div>
+      <p>Check them without trusting this page. Bitcoin Core should print the hop address above:</p>
+      <pre id="cmd"></pre>
+      <div class="row"><a href="#" id="copy-cmd">copy</a></div>
+      <p>To claim, the wallet of your bc1p address spends the hidden script <code>&lt;<span class="k-d">D</span>&gt; OP_CHECKSIG</code>, where <b class="k-d">D</b> is the key inside that address, signing with its tweaked private key. Bitcoin Core can do this: in the spending rules above, replace <span class="k-d">D</span>'s key in <code>pk(…)</code> with that tweaked private key as WIF, import the result into a new blank wallet with <code>importdescriptors</code>, and <code>sendall</code> to your address. No wallet works out the tweaked key from a seed. The source code's <code>just rescue</code> command does, offline, and prints these commands for you. <a href="about">Read how it works</a>.</p>
+    </div>
+  </main>
+  <script type="module" src="recover.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+[package]
+name = "unravel"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bdk_chain = "0.23"
+bip322 = "0.0.12"
+bitcoin = { version = "0.32", features = ["base64", "serde"] }
+miniscript = "12.3"
+rand = "0.8"
+rand_chacha = "0.3"
+schnorr_fun = { version = "0.13", features = ["libsecp_compat_0_29", "serde"] }
+secp256kfun = "0.12"
+serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"
+
+[dev-dependencies]
+bdk_bitcoind_rpc = "0.22"
+bdk_wallet = "3.2"
+bitcoind = { version = "0.36", features = ["26_0"] }
+
+[workspace]
+members = ["web", "server", "rescue"]

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>how it works · unravel rule</title>
+  <meta name="description" content="How the hop address signs for the exchange and forwards to your wallet, the safety net if the server vanishes, and who you trust for what.">
+  <meta name="theme-color" content="#000000">
+  <link rel="canonical" href="https://unravelrule.xyz/about">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://unravelrule.xyz/about">
+  <meta property="og:title" content="how it works · unravel rule">
+  <meta property="og:description" content="How the hop address signs for the exchange and forwards to your wallet, the safety net if the server vanishes, and who you trust for what.">
+  <meta property="og:image" content="https://unravelrule.xyz/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="travel rule, with an UN sticker slapped over the t to make unravel rule, over the tagline: prove you own an address">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="how it works · unravel rule">
+  <meta name="twitter:description" content="How the hop address signs for the exchange and forwards to your wallet, the safety net if the server vanishes, and who you trust for what.">
+  <meta name="twitter:image" content="https://unravelrule.xyz/og.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+</head>
+<body>
+  <main class="doc">
+    <p><a href="./">← unravel rule</a></p>
+    <h1>How it works</h1>
+
+    <p>Exchanges now ask for proof that you own your withdrawal address. They collect it as signatures, xpubs and test payments, then store it in the same databases that keep ending up on hacker forums. This service lets you prove exactly what they ask, truthfully, and give them nothing more. The rest of this page explains how it works and what you're trusting.</p>
+    <p>In short: you get a <span class="hop">hop address</span> that can sign the exchange's message. You withdraw to it, and it forwards everything to <span class="k-d">the destination address</span> you chose, usually your cold wallet, whose key never signs anything for the exchange.</p>
+
+    <h2>The hop address</h2>
+    <p>It is a taproot address with two ways to spend:</p>
+    <ul>
+      <li><b>The normal path</b> is a key shared between your browser and the server. Each holds half: your browser builds its key, <b class="k-b">B</b>, from your emergency kit's rescue key and the destination address, and the server keeps its own, <b class="k-s">S</b>. They combine with MuSig2 (BIP-327), so moving the funds this way needs both.</li>
+      <li><b>The safety net</b> is a hidden script, <code>&lt;<span class="k-d">D</span>&gt; OP_CHECKSIG</code>, where <b class="k-d">D</b> is the key inside the destination's bc1p address. The destination's wallet can spend this path on its own, at any time.</li>
+    </ul>
+    <figure class="diagram" role="img" aria-label="The hop address has two ways to spend. The normal path is the MuSig2 of B, the browser key held by your browser, and S, the server key held by the server: both are needed, and it only ever pays the addresses you gave. The hidden safety net is the script D OP_CHECKSIG, where D is the destination's key, held by the destination's wallet. It also needs R, the rescue key in your emergency kit, to find the address. Then the destination can spend it any time, without the server. When depositing, D is your wallet's key, and the server's key is tweaked by the exchange's deposit address.">
+      <div class="d-root"><span class="d-tag hop">hop address</span>tr(MuSig2(<b class="k-b">B</b>, <b class="k-s">S</b>), &lt;<b class="k-d">D</b>&gt; OP_CHECKSIG)</div>
+      <div class="d-split">
+        <div class="d-path">
+          <p class="d-kind">normal path · shared key</p>
+          <div class="d-node">MuSig2(<b class="k-b">B</b>, <b class="k-s">S</b>)</div>
+          <div class="d-holders">
+            <div class="d-holder k-b"><b>B</b> browser key<span>your browser, built from R and the destination address</span></div>
+            <div class="d-holder k-s"><b>S</b> server key<span>the server; when depositing, S′: S tweaked by the exchange's deposit address</span></div>
+          </div>
+          <p class="d-rule">both needed · only ever pays the addresses you gave</p>
+        </div>
+        <div class="d-path d-script-path">
+          <p class="d-kind">safety net · hidden script</p>
+          <div class="d-node">&lt;<b class="k-d">D</b>&gt; OP_CHECKSIG</div>
+          <div class="d-holders">
+            <div class="d-holder k-d"><b>D</b> destination key<span>the destination's wallet, usually your cold wallet; when depositing, your wallet</span></div>
+            <div class="d-holder k-b"><b>R</b> rescue key<span>your emergency kit, which the destination needs to find and spend the address</span></div>
+          </div>
+          <p class="d-rule">the destination, any time, without the server</p>
+        </div>
+      </div>
+      <p class="d-legend"><span class="k-b">■ your browser and kit</span><span class="k-s">■ the server</span><span class="k-d">■ the destination</span><span class="k-e">■ the exchange</span><span class="hop">■ the hop address</span></p>
+    </figure>
+    <p>The server sends its key, and your browser builds the address itself from the destination address, the exchange's deposit address when depositing, its own key and the server's key. If the server's address differs, the page refuses to use it. A server can't hand you an address without the safety net.</p>
+
+    <h2>Withdrawing and depositing</h2>
+    <p>Some exchanges ask you to prove you own the address a deposit comes from. For that, the page makes a hop address from <span class="k-e">the exchange's deposit address</span>, of any common type, and <span class="k-d">your wallet's bc1p address</span>. You send from your wallet to the hop address, and it signs the exchange's message as below. Both kinds of hop address are built as above, with these differences:</p>
+    <table>
+      <thead><tr><th></th><th>withdrawing</th><th>depositing</th></tr></thead>
+      <tbody>
+        <tr><th>coins arrive from</th><td><span class="k-e">the exchange</span></td><td><span class="k-d">your wallet</span></td></tr>
+        <tr><th>the safety net's key <b class="k-d">D</b></th><td>inside <span class="k-d">the destination address</span></td><td>inside <span class="k-d">your wallet's address</span></td></tr>
+        <tr><th>the server's key</th><td><b class="k-s">S</b></td><td><b class="k-s">S′</b>, which is <b class="k-s">S</b> tweaked by <span class="k-e">the exchange's deposit address</span></td></tr>
+        <tr><th>a forward pays</th><td><span class="k-d">the destination address</span></td><td><span class="k-e">the exchange's deposit address</span>, or, for anything the exchange sends back, <span class="k-d">your wallet's address</span>: you choose</td></tr>
+        <tr><th>recovery needs</th><td>your kit and <span class="k-d">the destination address</span></td><td>your kit, which lists <span class="k-e">the exchange's deposit address</span>, and <span class="k-d">your wallet's address</span></td></tr>
+      </tbody>
+    </table>
+    <p>Elsewhere on this page, when depositing, read "the destination" as your wallet's address, except where the forward pays.</p>
+    <p>The exchange's deposit address goes into the server's key so that the hop address itself names the exchange. The server keeps no lasting record of hop addresses: it forgets them when it restarts, and rebuilds each one from what the page sends. Registering a hop address it doesn't know costs the page a small proof of work, about a quarter of a second of hashing, so filling the server's memory costs CPU. If the hop address didn't name the exchange, someone with a copy of your kit who knew your wallet's address could register your funded hop address again with their own address as "the exchange", and the server would sign a forward to it. Because it does, they get a different, empty hop address instead. A withdrawal's hop address is protected the same way, by the destination address.</p>
+    <p>The price is that recovering a deposit's hop address needs the exchange's deposit address, and a kit saved earlier can't know it. So the first time you use a new exchange deposit address, the page asks you to save the kit again so it lists it. Exchanges usually give each account one deposit address, so that's usually once per exchange. The address is also on the exchange's deposit page and, once the hop address has forwarded to it, in the hop address's history.</p>
+
+    <h2>Signing the exchange's message</h2>
+    <p>The page and the server sign together through the normal path. The result is an ordinary BIP-322 signature in the "simple" format: a base64 witness, the same kind a single-key taproot wallet produces. The page only signs the exact message you pasted in, and checks the finished signature against the hop address before showing it.</p>
+
+    <h2>The forward</h2>
+    <p>While the page is open, it asks the server about the address every few seconds. Once a withdrawal has one confirmation, the server proposes a transaction, and your browser checks it before signing. Exchanges often fee-bump withdrawals, and a forward that spent the original would be dropped. When depositing to an exchange, the coins come from your own wallet, so they don't wait for a confirmation. The first coins go to the exchange. Anything that arrives after that may be a deposit the exchange sent back, so the page asks you where it goes, rather than sending it straight back.</p>
+    <ul>
+      <li>it spends exactly one deposit;</li>
+      <li>its only output pays the destination address, or when depositing, the address you chose: the exchange's deposit address or your wallet's;</li>
+      <li>that output is above the dust limit, and the network fee is at most 2,000 sats;</li>
+      <li>it has no timelock, so it can be broadcast now.</li>
+    </ul>
+    <p>These checks only stop a forward that pays an address you didn't give, burns the deposit on fees, or holds it up. The server always proposes one that passes, and it can't move the funds without the page's signature. The server looks up the address, not a transaction id, because exchanges often fee-bump withdrawals, which changes the id. You can reuse the address for later withdrawals.</p>
+
+    <h2>The safety net</h2>
+    <p>If you lose this browser, or the server goes away, the destination's wallet can claim the funds through the hidden script. Whoever holds the destination's key holds this path, so the destination should be your own wallet. It needs two things:</p>
+    <ul>
+      <li><b>Your emergency kit</b>. Spending through the script requires the address's shared key, which the address alone doesn't reveal. The kit rebuilds it, along with the spending rules, on the <a href="recover">recovery page</a>. For a deposit's hop address, the kit also lists the exchange's deposit address it needs.</li>
+      <li><b>A wallet that can do the spend.</b> A bc1p address holds a tweaked key (BIP-86), so the wallet has to sign the script with the address's tweaked private key. No wallet does this from a seed today, but Bitcoin Core does from a descriptor that holds that key. The <a href="https://github.com/nickfarrow/unravel-rule">source code</a>'s <code>just rescue</code> command makes that descriptor offline, from your kit and the wallet's seed words, and prints the Bitcoin Core commands that spend it.</li>
+    </ul>
+    <p>Taproot addresses that are script-only multisig have no usable key inside them, so the safety net can't work for them. Older bc1q addresses aren't accepted as the destination at all.</p>
+
+    <h2>Emergency kit</h2>
+    <p>Each browser gets one rescue key, 16 random bytes plus a 2-byte checksum, written as nine groups of four hex digits. The kit is a text file holding it, the server's public key, the network, the server's address and the day it was made. The page builds the browser key for each destination address from the rescue key, so one kit covers every hop address the browser makes with that server. It also lists the exchange deposit addresses you've used, since a deposit's hop address depends on one. The rescue key never changes, but switching server means saving a new kit. The page shows you a hop address once you've saved the kit and picked the saved file back up, or pasted back its rescue key. Phone wallets' built-in browsers sometimes drop a download without saying so, and this check catches that. Reusing a kit ("already have an emergency kit? reuse it"), in a browser that hasn't saved a kit of its own, brings back its rescue key. Each hop address it covers comes back when you enter that destination address again, and in deposit mode the exchange deposit address too, so you can forward from another device or after your browser clears its storage.</p>
+    <p>Keep it private. With it and the destination address, someone can find your hop addresses and rebuild your browser's half of the shared key. That half can't move funds without the server's.</p>
+    <p>Anyone can rebuild a hop address from the kit without the server:</p>
+    <pre>R = the rescue key's first 16 bytes
+b = TaggedHash("unravel/browser-key/v1", R || scriptPubKey(destination address)) mod n
+B = b·G
+S' = S, or when depositing to the exchange's deposit address E:
+  t  = TaggedHash("unravel/exchange/v1", S || scriptPubKey(E)) mod n
+  S' = S + t·G
+hop address = tr(MuSig2(<span class="k-b">B</span>, <span class="k-s">S'</span>), pk(<span class="k-d">D</span>))</pre>
+    <p>TaggedHash is the one from BIP-340. S is the server's key in its 33-byte compressed form, as the kit shows it, and scriptPubKey(E) is the script's raw bytes. MuSig2 is BIP-327 key aggregation of B then S', in that order, not sorted. D is the key inside the destination address. When depositing, that is your wallet's address, and b comes from it too, not from E. The <a href="recover">recovery page</a> does this for you, and is one self-contained file you can save and open offline, with the server gone.</p>
+
+    <h2>Who you trust, and for what</h2>
+    <ul>
+      <li><b class="k-s">The server alone</b> can't move your funds. It can refuse to forward them, and then you fall back to the safety net.</li>
+      <li><b class="k-b">Your browser alone</b> can't move your funds either. Someone who copies its storage still needs the server.</li>
+      <li><span class="hl"><b>The code this site serves</b> is what you really trust.</span> Your browser's key is made by this site's code. If that code were malicious, whoever runs the site would hold both halves and could take a deposit as soon as it arrived. Checking the spending rules can't catch this, because the normal path shows up as a single key with no record of who holds it. The fix is to run a copy of the page you've checked yourself, such as a self-hosted build that matches the published source. That copy can still use this site's server: pick a server with the button at the top right.</li>
+    </ul>
+    <p>No address design removes that last point on Bitcoin today. Without covenants (opcodes that restrict where coins can go), some key other than the destination's has to be able to spend, and whoever holds it could take the funds.</p>
+
+    <h2>Checking the address yourself</h2>
+    <p>The "verify" link under your hop address shows its spending rules as a descriptor:</p>
+    <pre>tr(&lt;shared key&gt;,pk(<span class="k-d">&lt;the destination's key&gt;</span>))#checksum</pre>
+    <p>Give it to Bitcoin Core with <code>bitcoin-cli deriveaddresses "&lt;descriptor&gt;"</code>, and it should print your hop address. The key in <code>pk(…)</code> should match the destination address: it is the 32 bytes encoded inside it, which <code>bitcoin-cli validateaddress &lt;address&gt;</code> prints as its <code>witness_program</code>.</p>
+
+    <h2>Privacy</h2>
+    <p>The exchange sees one ordinary taproot address that later pays the destination, which is no more than it would learn if you had withdrawn straight there. It never sees your xpub. The hidden script stays hidden unless the safety net is used. The server does learn which hop address belongs to which destination address, the exchange's message you sign, which can name your account, and your deposits. When depositing, it also learns the exchange's deposit address alongside your wallet's address. Exchanges usually give each account its own deposit address, so this links your wallet to your exchange account. Like any website, it also sees your IP address. Use a fresh receive address as the destination, and a leak shows only that one payment. The server keeps no record of any of this once it restarts. What it does keep is running totals: how many forwards it has made, in which direction, how many sats they carried, how many messages it has signed, how many broadcasts failed, and how long deposits sat before being forwarded, in four bands from an hour to more than a week. Totals only, with no addresses, transaction ids or times.</p>
+
+    <h2>Fees</h2>
+    <p>There's no service fee. The destination, or the exchange when depositing, receives the deposit minus the forward's network fee. The server pays 5% over its node's fee estimate for the next block, but never less than 1 sat/vB or more than 10, which keeps a forward at or under 1,110 sats. If it can't get a fee estimate, it waits rather than guess. When fees are higher, the forward still goes out and takes longer to confirm, and the page warns you before you withdraw. Its last step also shows the current fee and the smallest deposit that can be forwarded. Some exchanges also take their withdrawal fee out of the amount, so if you're paying someone an exact sum, send a little extra.</p>
+
+    <h2>Status</h2>
+    <p>It's experimental and unaudited, and it runs on Bitcoin mainnet with real bitcoin, so use small amounts. It's provided as is: you use it at your own risk.</p>
+    <p class="row"><a href="https://github.com/nickfarrow/unravel-rule">code</a><a href="https://github.com/nickfarrow/unravel-rule/issues">report issue</a></p>
+  </main>
+</body>
+</html>

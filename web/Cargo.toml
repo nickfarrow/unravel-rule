@@ -1,0 +1,18 @@
+[package]
+name = "unravel-web"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+unravel = { path = ".." }
+bitcoin = "0.32"
+bip322 = "0.0.12"
+schnorr_fun = "0.13"
+getrandom = { version = "0.2", features = ["js"] }
+qrcode = { version = "0.14", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+wasm-bindgen = "0.2"

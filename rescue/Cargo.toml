@@ -1,0 +1,10 @@
+[package]
+name = "unravel-rescue"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bip39 = "2.2"
+bitcoin = "0.32"
+secp256kfun = "0.12"
+unravel = { path = ".." }

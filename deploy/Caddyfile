@@ -1,0 +1,49 @@
+# Caddy in front of unravel-server, as an alternative to deploy/nginx.conf. This is what runs
+# on unravelrule.xyz. Caddy gets the certificate itself.
+#
+# Unlike nginx.conf, there is no per-IP rate limit: stock Caddy has none. A flood of status
+# checks can stall forwards for everyone, though funds wait safely at their hop addresses.
+
+{
+	# The server sees which hop address goes to which destination. Caddy's error log, for
+	# example a 502 while the server restarts, would tie both to an IP address. The
+	# reverse_proxy handler's own logger is shared by every site and warns, with the client's
+	# IP and headers, whenever a client hangs up mid-response, so it goes too.
+	log default {
+		exclude http.log.error.unravel http.handlers.reverse_proxy
+	}
+}
+
+unravelrule.xyz {
+	# No access log, for the same reason.
+	log unravel {
+		output discard
+	}
+	# Browsers that have seen this never try plain HTTP again.
+	header Strict-Transport-Security "max-age=31536000"
+	# The server reads at most 16 KiB of a request.
+	request_body {
+		max_size 16KB
+	}
+	reverse_proxy 127.0.0.1:8322 {
+		# The server has 8 workers and no timeouts of its own, so it must only see whole
+		# requests. A client trickling bytes then ties up Caddy rather than a worker.
+		request_buffers 16KB
+		# The server never needs a client's IP, so it never gets one to tie to a hop address.
+		header_up -X-Forwarded-For
+		transport http {
+			dial_timeout 5s
+			# An Electrum call can take about 45s: a 20s timeout, then one retry on a fresh
+			# connection. A status check makes up to three.
+			response_header_timeout 150s
+		}
+	}
+}
+
+# People type www. Caddy gets its certificate too, and sends them to the one address.
+www.unravelrule.xyz {
+	log unravel_www {
+		output discard
+	}
+	redir https://unravelrule.xyz{uri} permanent
+}

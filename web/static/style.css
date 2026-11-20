@@ -1,0 +1,420 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+:root {
+  --green: #39ff14;
+  --pink: #ff2d6f;
+  --cyan: #2de2ff;
+  --violet: #b98cff;
+  --yellow: #ffe500;
+  --magenta: #ff2bff;
+  --text: #e8e8e8;
+  --muted: #d4d4d4;
+  --line: #2e2e2e;
+}
+
+html {
+  background: #000;
+  color: var(--text);
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas,
+    "Lucida Console", "Liberation Mono", monospace;
+  line-height: 1.5;
+}
+
+body { min-height: 100vh; }
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+h1, h2 { font-weight: 700; }
+
+.mega {
+  font-size: clamp(2rem, 9vw, 5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #000;
+  text-align: center;
+  letter-spacing: 0.05em;
+  text-shadow:
+    -0.06em -0.06em 0 #fff, 0.06em -0.06em 0 #fff,
+    -0.06em 0.06em 0 #fff, 0.06em 0.06em 0 #fff;
+}
+
+/* The title rests on "unravel rule" and every 5s glitches back to "travel rule" in one
+   burst of three flickers. Both prefixes share one grid cell, so the title keeps its width;
+   only the glitch moves it. */
+.swap { display: inline-grid; }
+.swap > span { grid-area: 1 / 1; justify-self: end; animation: 5s step-end infinite; }
+.swap .from { animation-name: flicker-out; }
+.swap .to { animation-name: flicker-in; }
+.mega { animation: glitch 5s step-end infinite; }
+@keyframes flicker-out {
+  0% { opacity: 0; clip-path: none; }
+  80% { opacity: 1; clip-path: none; }
+  81.92% { opacity: 0; clip-path: none; }
+  83.84% { opacity: 0; clip-path: none; }
+  85.76% { opacity: 1; clip-path: inset(50% 0 0 0); }
+  87.2% { opacity: 1; clip-path: none; }
+  88.64% { opacity: 0; clip-path: none; }
+  90.56% { opacity: 1; clip-path: none; }
+  92.96% { opacity: 0; clip-path: none; }
+}
+@keyframes flicker-in {
+  0% { opacity: 1; clip-path: none; }
+  80% { opacity: 0; clip-path: none; }
+  81.92% { opacity: 1; clip-path: inset(0 0 50% 0); }
+  83.84% { opacity: 1; clip-path: none; }
+  85.76% { opacity: 0; clip-path: none; }
+  87.2% { opacity: 1; clip-path: none; }
+  88.64% { opacity: 1; clip-path: none; }
+  90.56% { opacity: 0; clip-path: none; }
+  92.96% { opacity: 1; clip-path: none; }
+}
+@keyframes glitch {
+  0% { transform: none; }
+  80% { transform: translate(-0.05em, 0) skewX(-8deg); }
+  81.92% { transform: translate(0.04em, 0); }
+  83.84% { transform: none; }
+  85.76% { transform: translate(0.06em, 0) skewX(5deg); }
+  87.2% { transform: translate(-0.03em, 0); }
+  88.64% { transform: none; }
+  90.56% { transform: translate(0.03em, 0) skewX(-4deg); }
+  92.96% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mega, .swap > span, .status::before { animation: none; }
+  .swap .from { opacity: 0; }
+}
+
+.tag { text-align: center; margin-top: 1.5rem; color: var(--green); font-weight: 700; }
+.tag b { font-weight: 900; -webkit-text-stroke: 0.05em; }
+.net { text-align: center; margin-top: 0.4rem; color: var(--muted); font-size: 0.8rem; }
+
+.explain {
+  position: relative;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+.explain::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green), 0 0 16px var(--green);
+}
+.explain summary {
+  list-style: none;
+  cursor: pointer;
+  width: fit-content;
+  margin: 0 auto;
+  color: var(--green);
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-shadow: 0 0 6px var(--green);
+}
+.explain summary::-webkit-details-marker { display: none; }
+.explain summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 0.5rem;
+  transition: transform 0.15s;
+}
+.explain[open] summary::before { transform: rotate(90deg); }
+.explain p, .explain ul { margin-top: 1rem; color: #ccc; }
+.explain ul { padding-left: 1.25rem; }
+.explain li + li { margin-top: 0.5rem; }
+/* White, so cyan only ever means the user's wallet. */
+.explain p.pitch, .hl { color: #fff; font-weight: 700; }
+.hl b { color: inherit; }
+
+.steps {
+  list-style: none;
+  margin-top: 2.5rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.card {
+  border: 1px solid #fff;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.12);
+}
+/* One card at a time. */
+.card:not(.open) { display: none; }
+.card h2 { font-size: 1rem; }
+/* Focused when its card opens, for screen readers. It isn't a control, so no ring. */
+.card h2:focus { outline: none; }
+.card .body { margin-top: 1.25rem; }
+
+/* What's been chosen so far, above the card. */
+/* Three columns, so the text centres on the page whatever back's width. */
+.trail { display: grid; grid-template-columns: 1fr minmax(0, max-content) 1fr; gap: 1rem; align-items: baseline; margin-top: 2.5rem; font-size: 0.8rem; color: var(--muted); }
+#trail-text { grid-column: 2; text-align: center; }
+#trail-text > span { white-space: nowrap; }
+#trail-text .addr { cursor: pointer; }
+/* A tapped address is shown whole, so it may break anywhere. */
+#trail-text > span:has(.addr:not(.short)) { white-space: normal; overflow-wrap: anywhere; }
+.trail + .steps { margin-top: 0.75rem; }
+#back { grid-column: 3; justify-self: end; white-space: nowrap; }
+#back::before { content: "← "; }
+.addr { color: var(--cyan); overflow-wrap: anywhere; }
+.addr.theirs, #exchange { color: var(--yellow); }
+/* Copied on a click: #desc-cmd and #key-cmd are the main page's commands, #cmd the recovery page's. */
+.big, .addr, #proof, #desc, #desc-cmd, #key-cmd, #cmd { cursor: pointer; transition: opacity 0.2s; }
+.copied { opacity: 0.4; }
+/* An address typed in takes its holder's colour too. */
+#x { color: var(--cyan); }
+#x:focus { border-color: var(--cyan); }
+#exchange:focus { border-color: var(--yellow); }
+.txid { color: var(--muted); overflow-wrap: anywhere; }
+a.txid:hover { color: #fff; }
+/* Where the forward stands. A pulsing dot while waiting, a tick once sent. */
+.status { margin-top: 1.25rem; font-weight: 700; overflow-wrap: anywhere; }
+.status.warn { color: var(--pink); }
+.status.waiting::before, .status.done::before { content: ""; display: inline-block; width: 0.55rem; height: 0.55rem; margin-right: 0.6rem; border-radius: 50%; background: #fff; box-shadow: 0 0 6px #fff; vertical-align: 0.1em; }
+.status.waiting::before { animation: pulse 1.2s ease-in-out infinite; }
+.status.done::before { background: var(--green); box-shadow: 0 0 6px var(--green); }
+@keyframes pulse { 50% { opacity: 0.25; } }
+#status-detail { white-space: pre-line; overflow-wrap: anywhere; }
+#hop-addrs { overflow-wrap: anywhere; }
+
+/* The first card's two ways in, each a whole block to tap. */
+.choice { display: grid; gap: 0.75rem; }
+.choice a { display: block; border: 2px solid var(--line); padding: 1rem 1.25rem; font-weight: 700; text-decoration: none; }
+.choice a:hover { border-color: var(--green); color: #fff; }
+
+input, textarea, select {
+  width: 100%;
+  background: #000;
+  color: #fff;
+  border: 2px solid #555;
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+  font-size: 0.9rem;
+}
+input::placeholder, textarea::placeholder { color: #666; }
+.body * + input { margin-top: 0.75rem; }
+textarea { height: 6rem; margin-top: 1rem; resize: none; word-break: break-all; }
+input[readonly] { border-color: var(--line); }
+/* The rescue key is the kit's, so it takes the browser's colour, and the server key the server's. */
+#kit-typed, #rescue { color: var(--green); }
+#spk { color: var(--magenta); }
+#spk:focus { border-color: var(--magenta); }
+#desc { color: #ccc; }
+/* A textarea so a message with line breaks is signed exactly as pasted. */
+#challenge { height: 4.5rem; margin-top: 0; color: #fff; word-break: normal; overflow-wrap: anywhere; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--green); }
+
+a { color: var(--pink); text-decoration: underline; text-underline-offset: 0.2em; }
+a:hover { color: #fff; }
+
+/* Actions read as buttons, like [info]; links inside sentences stay plain links. */
+.row { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 1rem; }
+.row a { text-decoration: none; font-weight: 700; }
+.row a::before { content: "["; }
+.row a::after { content: "]"; }
+.row a:hover { color: #fff; }
+a.busy { opacity: 0.4; pointer-events: none; }
+a.helper { color: var(--muted); font-weight: 400; }
+/* The link to the next card always sits at the bottom right of its card. */
+#exchange-next, #make, #kit-next, #agree, #next-3, #next-4 { margin-left: auto; }
+
+/* The browser's colour blending into the server's: the hop address mostly takes both. Mixed
+   in oklch, so the middle stays bright rather than grey. The glow is a filter, since a
+   text-shadow would show through the clipped, transparent text. */
+.big {
+  /* A bc1p address is 62 characters of about 0.6em: this fits it on one line. */
+  font-size: min(1.05rem, 2.6cqw);
+  font-weight: 700;
+  word-break: break-all;
+  filter: drop-shadow(0 0 6px rgba(150, 200, 255, 0.35));
+}
+/* An address on a line of its own, among text: sized to fit like .big. */
+#hop-addrs .addr, #status-main .addr { display: block; font-size: min(1em, 2.6cqw); word-break: break-all; }
+/* Too small on one line, so two even lines instead of a line and a straggler. --half is half
+   the address's length, set where it's shown; a bc1p address has 62 characters. */
+@container (max-width: 34rem) {
+  .big { font-size: min(1.05rem, 5.2cqw); }
+  #hop-addrs .addr, #status-main .addr { font-size: min(1em, 5.2cqw); }
+  .big, #hop-addrs .addr, #status-main .addr { max-width: calc(var(--half, 31) * 1ch + 0.5ch); }
+}
+main, .card .body { container-type: inline-size; }
+/* Plain green where the text can't be clipped, so the address is never invisible. A browser
+   that can't mix in oklch keeps the first gradient. */
+/* .doc .big outranks .doc p's grey. */
+.big, .doc .big, .hop, #proof { color: var(--green); }
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .big, .doc .big, .hop, .d-tag.hop, #proof {
+    background: linear-gradient(90deg, var(--green), var(--violet));
+    background: linear-gradient(90deg in oklch, var(--green), var(--violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+/* The signature speaks for the hop address, so its box takes the gradient too. */
+#proof {
+  border-image: linear-gradient(90deg, var(--green), var(--violet)) 1;
+  border-image: linear-gradient(90deg in oklch, var(--green), var(--violet)) 1;
+}
+.big::selection, .hop::selection, #proof::selection { color: #fff; background: #444; }
+.small { font-size: 0.9rem; color: var(--muted); margin-top: 0.75rem; }
+.body > .small:first-child { margin-top: 0; }
+/* .doc .ok and .doc .err outrank .doc p's grey on the recovery page. */
+.ok, .doc .ok { color: var(--green); font-size: 0.825rem; margin-top: 0.75rem; }
+/* Drawn, like the card ticks: monospace fonts render ✓ as √. */
+.ok:not(:empty)::before {
+  content: "";
+  display: inline-block;
+  width: 0.3rem;
+  height: 0.6rem;
+  margin: 0 0.6rem 0 0.15rem;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-0.1rem) rotate(45deg);
+}
+.err, .doc .err { color: var(--pink); font-size: 0.825rem; margin-top: 0.75rem; }
+.warn { font-size: 1.1rem; font-weight: 700; text-shadow: 0 0 6px var(--pink); }
+/* Block characters must touch, row to row, for the code to scan. */
+.qr { display: inline-block; margin: 1rem 0 0; font-size: 10px; line-height: 1; letter-spacing: 0; color: #fff; background: #000; }
+#y-qr { display: block; width: fit-content; margin-inline: auto; }
+.err:empty, .ok:empty { display: none; }
+
+pre {
+  margin-top: 1.25rem;
+  font: inherit;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #ccc;
+}
+
+footer {
+  margin-top: 4rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+}
+footer p + p { margin-top: 0.75rem; }
+footer .made { margin-top: 2rem; }
+.row.center { justify-content: center; }
+.row.end { justify-content: flex-end; }
+.forget-confirm { margin-top: 1rem; text-align: center; }
+
+.doc { font-size: 0.9rem; line-height: 1.7; }
+.doc h1 { font-size: 1.6rem; margin-top: 2rem; }
+.doc h2 { font-size: 1.05rem; margin-top: 2.25rem; color: #fff; }
+.doc p, .doc ul { margin-top: 0.9rem; color: #ccc; }
+.doc ul { padding-left: 1.25rem; }
+.doc li + li { margin-top: 0.4rem; }
+.doc b { color: #fff; }
+/* Grey, so the colours inside are only ever the keys' holders. */
+.doc code { color: #ccc; }
+.doc table { width: 100%; margin-top: 0.9rem; border-collapse: collapse; font-size: 0.82rem; line-height: 1.5; }
+.doc th, .doc td { padding: 0.45rem 0.6rem 0.45rem 0; text-align: left; vertical-align: top; border-top: 1px solid var(--line); color: #ccc; font-weight: normal; }
+.doc thead th { border-top: none; color: #fff; font-weight: 700; }
+.doc tbody th { color: #fff; }
+.doc pre { margin-top: 0.9rem; }
+.doc label { display: block; margin: 1.25rem 0 0.4rem; font-size: 0.8rem; color: var(--muted); }
+.doc label + textarea { margin-top: 0; }
+#x-used { overflow-wrap: anywhere; }
+
+/* About page: the hop address as a tree, with who holds each key. */
+.diagram { margin-top: 1.75rem; font-size: 0.8rem; line-height: 1.5; }
+.d-root {
+  width: fit-content;
+  margin: 0 auto;
+  padding: 0.6rem 1rem;
+  border: 2px solid #fff;
+  color: #fff;
+  text-align: center;
+}
+.d-tag { display: block; color: var(--muted); font-size: 0.7rem; }
+.d-tag.hop { width: fit-content; }
+.d-split {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  padding-top: 2.5rem;
+}
+/* The stem below the hop address and the bar it branches into. */
+.d-split::before {
+  content: "";
+  position: absolute;
+  top: 1.25rem;
+  left: 25%;
+  right: 25%;
+  height: 1.25rem;
+  border: 2px solid var(--line);
+  border-bottom: 0;
+}
+.d-split::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(50% - 1px);
+  height: 1.25rem;
+  border-left: 2px solid var(--line);
+}
+.d-path { border: 1px solid #555; padding: 0.9rem 1rem; }
+.d-script-path { border-style: dashed; }
+/* One colour per holder, so the same colour means the same party everywhere. */
+.k-b { --c: var(--green); }
+.k-s { --c: var(--magenta); }
+.k-d { --c: var(--cyan); }
+.k-e { --c: var(--yellow); }
+.k-b, .k-s, .k-d, .k-e, .doc b[class^="k-"] { color: var(--c); }
+.d-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; margin-top: 0.9rem !important; font-size: 0.7rem; }
+.d-kind { color: var(--muted); font-size: 0.7rem; letter-spacing: 0.05em; margin: 0 !important; }
+.d-node { margin-top: 0.4rem; color: #fff; }
+.d-holders { display: grid; gap: 0.5rem; margin-top: 0.9rem; }
+.d-holder { padding-left: 0.6rem; border-left: 2px solid var(--c); color: var(--text); }
+.d-holder b { color: var(--c); margin-right: 0.4rem; }
+.d-holder span { display: block; color: var(--muted); }
+.d-rule { margin-top: 0.9rem !important; color: var(--text) !important; }
+
+.more { margin-top: 1rem; }
+.more summary { cursor: pointer; width: fit-content; font-size: 0.825rem; color: var(--muted); }
+.more summary:hover { color: var(--text); }
+.more[open] summary { margin-bottom: 0.75rem; }
+
+.verify { margin-top: 1.25rem; padding-left: 1rem; border-left: 2px solid var(--line); }
+.verify .small:first-child { margin-top: 0; }
+/* Grey, so the only colours in a descriptor are its keys' holders. */
+.verify pre { margin-top: 0.5rem; }
+
+@media (max-width: 560px) {
+  main { padding: 3rem 1rem; }
+  .card { padding: 1rem; }
+  .d-split { grid-template-columns: 1fr; padding-top: 1.25rem; }
+  .d-split::before { display: none; }
+}
+
+/* The server this page talks to, top right. Green when connected, pink otherwise. */
+.conn { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 1; max-width: calc(100vw - 1.5rem); font-size: 0.8rem; }
+.conn summary { list-style: none; cursor: pointer; margin-left: auto; width: fit-content; color: var(--muted); }
+.conn summary::-webkit-details-marker { display: none; }
+.conn summary:hover { color: var(--text); }
+.conn .dot { display: inline-block; width: 0.55rem; height: 0.55rem; margin-right: 0.45rem; border-radius: 50%; background: var(--pink); box-shadow: 0 0 6px var(--pink); }
+.conn.up .dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.conn .panel { width: 22rem; max-width: 100%; margin-top: 0.5rem; padding: 1rem; background: #000; border: 1px solid var(--line); }
+.conn dl { display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.8rem; }
+.conn dt { color: var(--muted); }
+.conn dd { word-break: break-all; }
+.conn input { margin-top: 1rem; }
+
+/* The forward's network fee right now, top left. Pink when the market is above the cap. */
+.fee { position: absolute; top: 0.75rem; left: 0.75rem; font-size: 0.8rem; color: var(--muted); cursor: pointer; }
+.fee.high { color: var(--pink); }
+/* The rate shows at once on hover, and on tap on phones, where a title tooltip never appears. */
+.fee:hover::after { content: " (" attr(data-rate) ")"; }

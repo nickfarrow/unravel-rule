@@ -1,0 +1,51 @@
+# Runs the server under systemd. Copy to /etc/systemd/system/, then:
+#   useradd --system --home-dir /var/lib/unravel-rule unravel
+#   systemctl enable --now unravel-server
+[Unit]
+Description=unravel rule hop address service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=unravel
+EnvironmentFile=/etc/unravel-rule.env
+ExecStart=/opt/unravel-rule/unravel-server
+# It exits if the Electrum server is down at start, so keep trying until it's up.
+Restart=always
+RestartSec=10
+# Each request in the queue holds a socket. Running out stops the server accepting for good.
+LimitNOFILE=65536
+# A core dump would hold every hop address with its destination, and the server key.
+LimitCORE=0
+StateDirectory=unravel-rule
+StateDirectoryMode=0700
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+# AF_UNIX for name lookups through systemd-resolved.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+# It needs no capabilities, no namespaces, no executable memory and only ordinary syscalls.
+CapabilityBoundingSet=
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged
+# Files it makes are for its own user only.
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
